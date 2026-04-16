@@ -16,6 +16,7 @@ def setup_korean_font():
         "/System/Library/Fonts/Supplemental/AppleGothic.ttf",
         "/Library/Fonts/NanumGothic.ttf",
         "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+        "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf",
     ]
     for fp in candidates:
         if os.path.exists(fp):
@@ -29,15 +30,21 @@ def setup_korean_font():
             [sys.executable, "-m", "pip", "install", "fonts-nanum", "--quiet"],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
-        nanum_paths = list(Path(sys.prefix).rglob("NanumGothic.ttf"))
-        if not nanum_paths:
-            nanum_paths = list(Path("/usr").rglob("NanumGothic.ttf"))
+    except Exception:
+        pass
+
+    search_dirs = [Path(sys.prefix), Path("/usr/share/fonts"), Path.home()]
+    for d in search_dirs:
+        if not d.exists():
+            continue
+        nanum_paths = list(d.rglob("NanumGothic*.ttf"))
         if nanum_paths:
             fp = str(nanum_paths[0])
             fm.fontManager.addfont(fp)
             plt.rcParams["font.family"] = fm.FontProperties(fname=fp).get_name()
-    except Exception:
-        pass
+            break
+
+    fm._rebuild()
     plt.rcParams["axes.unicode_minus"] = False
 
 
